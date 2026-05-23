@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ElementType, useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { RefreshCw, Sparkles, ArrowLeft } from 'lucide-react';
+import { RefreshCw, Sparkles, ArrowLeft, FileText, BarChart3, Target } from 'lucide-react';
 import { PDFDownloadButton } from '@/components/pdf/PDFDownloadButton';
 import toast from 'react-hot-toast';
 import { api, Assignment, GeneratedPaper } from '../../../../lib/api';
@@ -47,14 +47,14 @@ function GeneratedByBadge({
 
 function DifficultyBadge({ difficulty }: { difficulty: string }) {
   const colors: Record<string, string> = {
-    easy: 'bg-green-100 text-green-700',
-    medium: 'bg-yellow-100 text-yellow-700',
-    hard: 'bg-red-100 text-red-700',
+    easy: 'bg-green-50 text-green-700 ring-green-200',
+    medium: 'bg-amber-50 text-amber-700 ring-amber-200',
+    hard: 'bg-red-50 text-red-700 ring-red-200',
   };
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-        colors[difficulty] || 'bg-gray-100 text-gray-600'
+      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ring-inset ${
+        colors[difficulty] || 'bg-gray-50 text-gray-600 ring-gray-200'
       }`}
     >
       {difficulty}
@@ -67,12 +67,52 @@ function TypeTag({ type }: { type: string }) {
     mcq: 'MCQ',
     short_answer: 'Short Answer',
     long_answer: 'Long Answer',
+    diagram: 'Diagram',
+    numerical: 'Numerical',
   };
   return (
-    <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+    <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-600">
       {labels[type] || type}
     </span>
   );
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ElementType;
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-500">
+        <Icon size={18} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-medium text-gray-500">{label}</p>
+        <p className="mt-0.5 text-lg font-bold text-gray-900">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function MetadataItem({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-sm">
+      <p className="text-[11px] font-medium text-gray-500">{label}</p>
+      <p className="mt-0.5 text-sm font-bold text-gray-900">{value}</p>
+    </div>
+  );
+}
+
+function formatQuestionText(text: string) {
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function estimateRemainingSeconds(progress: number, startedAt: number): number | null {
@@ -194,24 +234,32 @@ export default function AssignmentOutputPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="mx-auto w-full max-w-4xl min-w-0">
       <button
         onClick={() => router.push('/')}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-6"
+        className="mb-6 flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 sm:text-sm"
       >
         <ArrowLeft size={16} />
         Back to assignments
       </button>
 
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-900">{assignment.title}</h1>
-          <p className="text-gray-500 mt-1">
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <h1 className="break-words text-xl font-bold leading-tight text-gray-900 sm:text-2xl">
+            {assignment.title}
+          </h1>
+          <p className="hidden text-gray-500 mt-1">
             {assignment.subject} · Grade {assignment.gradeLevel} · {assignment.totalMarks}{' '}
             marks · {assignment.duration} min
           </p>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <MetadataItem label="Subject" value={assignment.subject} />
+            <MetadataItem label="Grade" value={assignment.gradeLevel} />
+            <MetadataItem label="Marks" value={assignment.totalMarks} />
+            <MetadataItem label="Duration" value={`${assignment.duration} min`} />
+          </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-shrink-0 sm:items-center">
           {paper && paper.sections.length > 0 && (
             <PDFDownloadButton
               assessment={{
@@ -229,7 +277,7 @@ export default function AssignmentOutputPage() {
           <button
             onClick={handleRegenerate}
             disabled={isGenerating}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-gray-300 bg-white px-3 py-2 text-[11px] font-medium hover:bg-gray-50 disabled:opacity-50 sm:w-auto sm:px-4 sm:text-sm"
           >
             <RefreshCw size={14} className={isGenerating ? 'animate-spin' : ''} />
             Regenerate
@@ -286,59 +334,119 @@ export default function AssignmentOutputPage() {
       )}
 
       {paper && paper.sections.length > 0 && (
-        <div
-          id="question-paper"
-          className="space-y-8 bg-white p-6 rounded-xl"
-          style={{ backgroundColor: '#ffffff' }}
-        >
-          <div className="flex gap-4 text-sm text-gray-500 border border-gray-200 rounded-xl p-4">
-            <span>{paper.metadata.totalQuestions} questions</span>
-            <span>·</span>
-            <span>{paper.metadata.totalMarks} total marks</span>
-            <span>·</span>
-            <span>
-              Easy {paper.metadata.difficultyDistribution.easy} / Medium{' '}
-              {paper.metadata.difficultyDistribution.medium} / Hard{' '}
-              {paper.metadata.difficultyDistribution.hard}
-            </span>
+        <div id="question-paper" className="space-y-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <StatCard
+              icon={FileText}
+              label="Questions"
+              value={paper.metadata.totalQuestions}
+            />
+            <StatCard
+              icon={Target}
+              label="Total Marks"
+              value={paper.metadata.totalMarks}
+            />
+            <StatCard
+              icon={BarChart3}
+              label="Difficulty"
+              value={`${paper.metadata.difficultyDistribution.easy}E / ${paper.metadata.difficultyDistribution.medium}M / ${paper.metadata.difficultyDistribution.hard}H`}
+            />
           </div>
 
-          {paper.sections.map((section) => (
-            <div
-              key={section.id}
-              className="border border-gray-200 rounded-xl overflow-hidden"
-            >
-              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-bold text-gray-900">{section.title}</h2>
-                {section.instructions && (
-                  <p className="text-sm text-gray-500 mt-1">{section.instructions}</p>
-                )}
-              </div>
-              <ol className="divide-y divide-gray-100">
-                {section.questions.map((q, idx) => (
-                  <li key={q.id} className="px-6 py-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          <span className="text-gray-400 mr-2">{idx + 1}.</span>
-                          {q.text}
-                        </p>
-                        <div className="flex gap-2 mt-2">
-                          <TypeTag type={q.type} />
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <DifficultyBadge difficulty={q.difficulty} />
-                        <span className="text-sm font-semibold text-gray-500 whitespace-nowrap">
-                          {q.marks} marks
-                        </span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+          <div className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-6">
+            <div className="mb-6 border-b border-gray-100 pb-5 text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+                Question Paper
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-gray-900">
+                {assignment.title}
+              </h2>
+              <p className="mt-2 text-sm font-medium text-gray-500">
+                {assignment.subject} · Grade {assignment.gradeLevel} · {assignment.duration} min
+              </p>
             </div>
-          ))}
+
+            <div className="space-y-6">
+              {paper.sections.map((section, sectionIndex) => (
+                <section
+                  key={section.id}
+                  className="overflow-hidden rounded-2xl border border-gray-200 bg-white"
+                >
+                  <div className="border-b border-gray-200 bg-gray-50 px-3 py-4 sm:px-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          Section {sectionIndex + 1}
+                        </p>
+                        <h3 className="mt-1 text-lg font-bold text-gray-900">
+                          {section.title}
+                        </h3>
+                      </div>
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-500 ring-1 ring-gray-200">
+                        {section.questions.length} questions
+                      </span>
+                    </div>
+                    {section.instructions && (
+                      <p className="mt-3 rounded-xl bg-white px-4 py-3 text-sm leading-6 text-gray-600 ring-1 ring-gray-100">
+                        {section.instructions}
+                      </p>
+                    )}
+                  </div>
+                  <ol className="space-y-4 p-3 sm:p-5">
+                    {section.questions.map((q, idx) => {
+                      const questionLines = formatQuestionText(q.text);
+                      const [firstLine, ...restLines] = questionLines.length
+                        ? questionLines
+                        : [q.text];
+
+                      return (
+                        <li
+                          key={q.id}
+                          className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4"
+                        >
+                          <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white sm:h-8 sm:w-8 sm:text-sm">
+                              {idx + 1}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                                <p className="min-w-0 max-w-full break-words text-[13px] font-semibold leading-6 text-gray-900 sm:flex-1 sm:text-[15px] sm:leading-7">
+                                  {firstLine}
+                                </p>
+                                <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">
+                                  <DifficultyBadge difficulty={q.difficulty} />
+                                  <span className="rounded-full bg-gray-900 px-3 py-1 text-xs font-bold text-white">
+                                    {q.marks} {q.marks === 1 ? 'mark' : 'marks'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {restLines.length > 0 && (
+                                <div className="mt-3 max-w-full space-y-2 text-[12px] leading-5 text-gray-700 sm:text-sm sm:leading-6">
+                                  {restLines.map((line, lineIndex) => (
+                                    <p
+                                      key={`${q.id}-line-${lineIndex}`}
+                                      className="break-words"
+                                    >
+                                      {line}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
+
+                              <div className="mt-4 flex flex-wrap items-center gap-2">
+                                <TypeTag type={q.type} />
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </section>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

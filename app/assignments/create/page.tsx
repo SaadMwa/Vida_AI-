@@ -26,6 +26,13 @@ const DEFAULT_ROWS: QuestionRowData[] = [
   { type: 'numerical', count: 5, marks: 5 },
 ];
 
+function formatDueDate(date: string) {
+  if (!date) return '';
+  const [yyyy, mm, dd] = date.split('-');
+  if (!yyyy || !mm || !dd) return date;
+  return `${dd}-${mm}-${yyyy}`;
+}
+
 export default function CreateAssignment() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -137,8 +144,9 @@ export default function CreateAssignment() {
     setSubmitting(true);
     const loadingToast = toast.loading('AI is generating questions...');
 
+    const formattedDueDate = formatDueDate(dueDate);
     const fileNote = uploadedFile ? `\nReference file: ${uploadedFile.name}` : '';
-    const dueNote = dueDate ? `Due date: ${dueDate}.` : '';
+    const dueNote = formattedDueDate ? `Due date: ${formattedDueDate}.` : '';
     const combinedAdditional = [dueNote, additionalInfo, fileNote]
       .filter(Boolean)
       .join('\n')
@@ -157,7 +165,7 @@ export default function CreateAssignment() {
         gradeLevel,
         totalMarks,
         duration,
-        instructions: dueDate ? `Due Date: ${dueDate}` : '',
+        instructions: formattedDueDate ? `Due Date: ${formattedDueDate}` : '',
         questionTypes: apiQuestionTypes,
         additionalInfo: combinedAdditional,
       });
@@ -198,23 +206,9 @@ export default function CreateAssignment() {
                 <label className="block text-sm font-bold text-gray-900 mb-2">Due Date</label>
                 <div className="relative">
                   <input
-                    type="text"
-                    placeholder="DD-MM-YYYY"
+                    type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    onFocus={(e) => (e.target.type = 'date')}
-                    onBlur={(e) => {
-                      if (e.target.value) {
-                        const d = new Date(e.target.value);
-                        if (!isNaN(d.getTime())) {
-                          const dd = String(d.getDate()).padStart(2, '0');
-                          const mm = String(d.getMonth() + 1).padStart(2, '0');
-                          const yyyy = d.getFullYear();
-                          setDueDate(`${dd}-${mm}-${yyyy}`);
-                        }
-                      }
-                      e.target.type = 'text';
-                    }}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                   />
                   <Calendar
@@ -348,7 +342,7 @@ export default function CreateAssignment() {
                 <p>
                   <span className="font-semibold text-gray-800">Summary:</span> {totalQuestions}{' '}
                   questions · {totalMarks} marks
-                  {dueDate ? ` · Due ${dueDate}` : ''}
+                  {dueDate ? ` · Due ${formatDueDate(dueDate)}` : ''}
                 </p>
               </div>
             </div>

@@ -63,7 +63,7 @@ export function PDFDownloadButton({
       type="button"
       onClick={handleDownload}
       disabled={isGenerating || disabled}
-      className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+      className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-[11px] font-medium text-white hover:bg-gray-800 disabled:opacity-50 sm:w-auto sm:px-4 sm:text-sm"
     >
       {isGenerating ? (
         <Loader2 size={18} className="animate-spin" />
