@@ -176,7 +176,7 @@ export default function CreateAssignment() {
   };
 
   return (
-    <div className="-m-6 min-h-[calc(100vh-3.5rem)] bg-gradient-to-b from-[#ececec] via-[#e8e8e8] to-[#e0e0e0] flex flex-col items-center py-10 px-4 sm:px-8">
+    <div className="flex flex-1 flex-col w-full min-w-0 min-h-0 bg-gradient-to-b from-[#ececec] via-[#e8e8e8] to-[#e0e0e0] rounded-2xl items-center py-8 md:py-10 px-2 sm:px-4">
       <StepProgress currentStep={step} totalSteps={2} />
 
       <div className="w-full max-w-3xl bg-white rounded-[28px] shadow-sm border border-gray-100/80 px-6 sm:px-10 py-8 sm:py-10">

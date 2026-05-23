@@ -1,7 +1,5 @@
-'use client';
-
-import { AssignmentsList } from '../components/assignments/AssignmentsList';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return <AssignmentsList />;
+  redirect('/assignments');
 }

@@ -15,8 +15,9 @@ export function createRedisConnection(): Redis {
   // Check if using Upstash (requires TLS)
   const isUpstash = url.includes('upstash.io');
   
+  // IMPORTANT: maxRetriesPerRequest MUST be null for BullMQ
   const options: any = {
-    maxRetriesPerRequest: 3,
+    maxRetriesPerRequest: null,  // ← THIS IS CRITICAL
     retryStrategy: (times: number) => {
       if (times > 3) {
         console.log(`Redis retry attempt ${times}, stopping`);

@@ -156,7 +156,7 @@ export function AssignmentsList() {
 
   if (loading) {
     return (
-      <div>
+      <div className="w-full min-w-0">
         <div className="flex items-center justify-between mb-6">
           <div className="h-8 w-40 bg-gray-200 animate-pulse rounded-lg" />
           <div className="h-9 w-36 bg-gray-200 animate-pulse rounded-full" />
@@ -171,13 +171,16 @@ export function AssignmentsList() {
   }
 
   if (assignments.length === 0) {
-    return <AssignmentsEmptyState />;
+    return (
+      <div className="flex flex-1 flex-col w-full min-h-0 min-w-0">
+        <AssignmentsEmptyState />
+      </div>
+    );
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
+    <div className="w-full min-w-0">
+      <div className="flex items-center justify-end mb-6">
         <button
           type="button"
           onClick={() => router.push('/assignments/create')}
